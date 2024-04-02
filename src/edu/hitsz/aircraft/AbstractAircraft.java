@@ -5,6 +5,8 @@ import edu.hitsz.basic.AbstractFlyingObject;
 
 import java.util.List;
 
+import static java.lang.Math.min;
+
 /**
  * 所有种类飞机的抽象父类：
  * 敌机（BOSS, ELITE, MOB），英雄飞机
@@ -24,6 +26,11 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         this.maxHp = hp;
     }
 
+    public void increaseHp(int increase){
+        if (notValid()) return;
+        hp+=increase;
+        hp=min(hp,maxHp);
+    }
     public void decreaseHp(int decrease){
         hp -= decrease;
         if(hp <= 0){

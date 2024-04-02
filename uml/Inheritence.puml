@@ -54,6 +54,17 @@ class MobEnemy {
 }
 AbstractAircraft <|-- MobEnemy
 
+class EliteEnemy {
+    - shootNum:int
+    - power:int
+    - direction:int
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+    + shoot():List<BaseBullet>
+}
+
+AbstractAircraft <|-- EliteEnemy
+
 abstract class BaseBullet
 {
     - power:int
@@ -78,4 +89,38 @@ BaseBullet <|-- EnemyBullet
 AbstractFlyingObject <|-- AbstractAircraft
 AbstractFlyingObject <|-- BaseBullet
 
+abstract class BaseProp
+{
+    PropType: type
+    + BaseProp(int locationX, int locationY, int speedX, int speedY, int power)
+    + forward():void
+	+ getType():PropType
+	+ active():boolean
+}
+AbstractFlyingObject <|-- BaseProp
+
+class BloodProp
+{
+    PropType: type
+    + BloodProp(int locationX, int locationY, int speedX, int speedY, int power)
+	+ active():boolean
+}
+BaseProp <|-- BloodProp
+
+
+class BombProp
+{
+    PropType: type
+    + BombProp(int locationX, int locationY, int speedX, int speedY, int power)
+	+ active():boolean
+}
+BaseProp <|-- BombProp
+
+class BulletProp
+{
+    PropType: type
+    + BulletProp(int locationX, int locationY, int speedX, int speedY, int power)
+	+ active():boolean
+}
+BaseProp <|-- BulletProp
 @enduml

@@ -3,6 +3,8 @@ package edu.hitsz.application;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.prop.*;
+import edu.hitsz.prop.PropType;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import javax.swing.*;
@@ -39,10 +41,13 @@ public class Game extends JPanel {
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
 
+    private final List<BaseProp> props;
+
     /**
      * 屏幕中出现的敌机最大数量
      */
     private int enemyMaxNumber = 5;
+    private int propMaxNumber = 3;
 
     /**
      * 当前得分
@@ -74,6 +79,7 @@ public class Game extends JPanel {
         enemyAircrafts = new LinkedList<>();
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
+        props = new LinkedList<>();
 
         /**
          * Scheduled 线程池，用于定时任务调度
@@ -131,6 +137,9 @@ public class Game extends JPanel {
 
             // 飞机移动
             aircraftsMoveAction();
+
+            // 道具移动
+            propsMoveAction();
 
             // 撞击检测
             crashCheckAction();
@@ -192,6 +201,11 @@ public class Game extends JPanel {
         }
     }
 
+    private void propsMoveAction(){
+        for (BaseProp prop:props){
+            prop.forward();
+        }
+    }
     private void aircraftsMoveAction() {
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
             enemyAircraft.forward();
@@ -234,6 +248,38 @@ public class Game extends JPanel {
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
                         // TODO 获得分数，产生道具补给
+                        if (!(enemyAircraft instanceof EliteEnemy)) continue;
+                        if (props.size()<propMaxNumber&&random()-0.3<=1e-4){
+                            System.out.println("生产道具");
+                            int type=(int)(random()*30);
+                            if (type<=10) {
+                                props.add(new BloodProp(
+                                    enemyAircraft.getLocationX(),
+                                    enemyAircraft.getLocationY(),
+                                    0,
+                                    10,
+                                    PropType.BLOOD
+                                ));
+                            }
+                            else if (type<=20) {
+                                props.add(new BombProp(
+                                        enemyAircraft.getLocationX(),
+                                        enemyAircraft.getLocationY(),
+                                        0,
+                                        10,
+                                        PropType.BOMB
+                                ));
+                            }
+                            else {
+                                props.add(new BulletProp(
+                                        enemyAircraft.getLocationX(),
+                                        enemyAircraft.getLocationY(),
+                                        0,
+                                        10,
+                                        PropType.BULLET
+                                ));
+                            }
+                        }
                         score += 10;
                     }
                 }
@@ -246,6 +292,10 @@ public class Game extends JPanel {
         }
 
         // Todo: 我方获得道具，道具生效
+        for (BaseProp prop:props){
+            if (prop.notValid()) continue;
+            if (prop.active(heroAircraft)) prop.vanish();
+        }
 
     }
 
@@ -260,6 +310,7 @@ public class Game extends JPanel {
         enemyBullets.removeIf(AbstractFlyingObject::notValid);
         heroBullets.removeIf(AbstractFlyingObject::notValid);
         enemyAircrafts.removeIf(AbstractFlyingObject::notValid);
+        props.removeIf(AbstractFlyingObject::notValid);
     }
 
 
@@ -287,6 +338,7 @@ public class Game extends JPanel {
 
         // 先绘制子弹，后绘制飞机
         // 这样子弹显示在飞机的下层
+        paintImageWithPositionRevised(g,props);
         paintImageWithPositionRevised(g, enemyBullets);
         paintImageWithPositionRevised(g, heroBullets);
 
